@@ -100,17 +100,17 @@ def get_user_favorites():
 def post_favorite_planet(planet_id):
     body = request.json
 
-    # Validar que el planeta exista
+    
     planet_exist = Planet.query.get(planet_id)
     if not planet_exist:
         return jsonify({"error": "Planet not found"}), 404
     
-    # Verificar si ya es favorito
+    
     planet_existing_fav = Favorite.query.filter_by(user_id = body['user_id'], planet_id=planet_id).first()
     if planet_existing_fav:
         return jsonify({"message": "Planet already in favorites"}), 409
     
-    # Crear nuevo favorito
+    
     new_favorite_planet = Favorite(user_id = body['user_id'], planet_id=planet_id)
     db.session.add(new_favorite_planet)
 
@@ -128,17 +128,17 @@ def post_favorite_planet(planet_id):
 def post_favorite_person(people_id):
     body = request.json
 
-    # Validar que el personaje exista
+    
     person_exist = People.query.get(people_id)
     if not person_exist:
         return jsonify({"error": "Person not found"}), 404
     
-    # Verificar si ya es favorito
+    
     person_existing_fav = Favorite.query.filter_by(user_id = body['user_id'], people_id = people_id).first()
     if person_existing_fav:
         return jsonify({"message": "Person already in favorites"}), 409
     
-    # Crear nuevo favorito
+    
     new_favorite_person = Favorite(user_id = body['user_id'], people_id = people_id)
     db.session.add(new_favorite_person)
 
@@ -154,13 +154,13 @@ def post_favorite_person(people_id):
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favorite_planet(planet_id):
 
-    # Verificar que el favorito exista.
+    
     favorite = Favorite.query.filter_by(planet_id=planet_id).first()
 
     if not favorite:
         return jsonify({"error": "Favorite planet not found"}), 404
 
-    # Eliminar favorito
+    
     db.session.delete(favorite)
 
     try:
@@ -175,13 +175,13 @@ def delete_favorite_planet(planet_id):
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def delete_favorite_people(people_id):
 
-    # Verificar que el favorito exista.
+    
     favorite = Favorite.query.filter_by(people_id = people_id).first()
 
     if not favorite:
         return jsonify({"error": "Favorite people not found"}), 404
 
-    # Eliminar favorito
+    
     db.session.delete(favorite)
 
     try:
@@ -195,68 +195,3 @@ def delete_favorite_people(people_id):
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
-
-
-
-
-
-
-# OTROS CODIGOS VISTOS EN CLASE:
-
-# 1) PARA PEOPLE:
-
-@app.route("/planet-population",  methods=["GET"])
-def populate_planet():
-
-    URL_PEOPLE = "https://swapi.tech/api/planets?page=1&limit=50"
-    response = request.get(URL_PEOPLE)
-    data = response.json()
-    for person in data["results"]:
-        response = request.get(person["url"])
-        person_data = response.json()
-        person_data = person_data["result"]
-
-        people = Planet()
-        people.name = person_data["properties"]["name"]
-        people.description = person_data["description"]
-        # people.eye_color = person_data["properties"]["eye_color"]
-
-        db.session.add(people)
-
-    try:
-        db.session.commit()
-        return jsonify("People saved"), 201
-
-    except Exception as error:
-        db.session.rollback()
-        return jsonify(f"Error: {error.args}")
-    
-
-    
-# 2) PARA PLANET:
-
-@app.route("/people-population",  methods=["GET"])
-def populate_people():
-
-    URL_PEOPLE = "https://swapi.tech/api/people?page=1&limit=50"
-    response = requests.get(URL_PEOPLE)
-    data = response.json()
-    for person in data["results"]:
-        response = requests.get(person["url"])
-        person_data = response.json()
-        person_data = person_data["result"]
-
-        people = People()
-        people.name = person_data["properties"]["name"]
-        people.description = person_data["description"]
-        people.eye_color = person_data["properties"]["eye_color"]
-
-        db.session.add(people)
-
-    try:
-        db.session.commit()
-        return jsonify("People saved"), 201
-
-    except Exception as error:
-        db.session.rollback()
-        return jsonify(f"Error: {error.args}")
